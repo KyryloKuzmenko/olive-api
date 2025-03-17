@@ -14,7 +14,6 @@ export const signUp = async (req, res, next) => {
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       const error = new Error("User already exist");
       error.statusCode = 409;
@@ -24,12 +23,12 @@ export const signUp = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashpassword = await bcrypt.hash(password, salt);
 
-    const newUsers = await User.create(
+    const [newUser] = await User.create(
       [{ name, email, password: hashpassword }],
       { session }
     );
 
-    const token = jwt.sign({ userId: newUsers[0]._id }, JWT_SECRET, {
+    const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
@@ -47,7 +46,7 @@ export const signUp = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      user: newUsers[0],
+      user: newUser,
     });
   } catch (error) {
     await session.abortTransaction();
@@ -101,4 +100,23 @@ export const signIn = async (req, res, next) => {
 };
 // ===============================
 
-export const signOut = async (req, res, next) => {};
+
+// =====logout=====
+export const signOut = async (req, res, next) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User signed out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// ===============================
