@@ -9,6 +9,5 @@ oliveRouter.get('/', authorize, getOlives);
 
 oliveRouter.post('/', authorize, createOlive);
 
-// oliveRouter.delete('/:id', (req, res) => res.send({ title: 'Delete olive' }));
 
 export default oliveRouter;
