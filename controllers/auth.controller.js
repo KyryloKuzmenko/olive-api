@@ -23,12 +23,12 @@ export const signUp = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashpassword = await bcrypt.hash(password, salt);
 
-    const [newUser] = await User.create(
+    const newUsers = await User.create(
       [{ name, email, password: hashpassword }],
       { session }
     );
 
-    const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
+    const token = jwt.sign({ userId: newUsers[0]._id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
@@ -46,7 +46,7 @@ export const signUp = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      user: newUser,
+      data: {user: newUsers[0]},
     });
   } catch (error) {
     await session.abortTransaction();
@@ -92,7 +92,7 @@ export const signIn = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "User signed in successfully",
-      user,
+      data: {user},
     });
   } catch (error) {
     next(error);
@@ -119,4 +119,34 @@ export const signOut = async (req, res, next) => {
     next(error);
   }
 };
+// ===============================
+
+
+// ======refresh=====
+export const refresh = async (req, res, next) => {
+  try {
+ 
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Session refreshed successfully",
+      data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // ===============================
