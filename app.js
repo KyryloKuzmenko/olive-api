@@ -18,10 +18,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "https://olivefinder.vercel.app",
-      "https://olivefinder-e5erj5p74-kyrylokuzmenkos-projects.vercel.app",
-    ],
+    origin: "*",
     credentials: true,
   })
 );
