@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: true,
+    origin: "https://olivefinder.vercel.app",
     credentials: true,
   })
 );
