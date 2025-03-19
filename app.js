@@ -18,8 +18,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "*",
-    credentials: true,
+    origin: "https://olivefinder.vercel.app", // ВАЖНО: ставим конкретный origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // Разрешённые методы
+    credentials: true, // ОБЯЗАТЕЛЬНО для работы с куками
   })
 );
 app.use(arcjetMiddleware);
