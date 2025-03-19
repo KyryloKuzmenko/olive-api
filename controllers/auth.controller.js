@@ -15,9 +15,7 @@ export const signUp = async (req, res, next) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      const error = new Error("User already exist");
-      error.statusCode = 409;
-      throw error;
+      return res.status(409).json({ message: "User already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -34,8 +32,8 @@ export const signUp = async (req, res, next) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 3600000,
       path: "/",
     });
@@ -46,7 +44,7 @@ export const signUp = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      data: {user: newUsers[0]},
+      data: { user: newUsers[0] },
     });
   } catch (error) {
     await session.abortTransaction();
@@ -64,17 +62,13 @@ export const signIn = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = 404;
-      throw error;
+      return res.status(404).json({ message: "User not found" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      const error = new Error("Invalid password");
-      error.statusCode = 401;
-      throw error;
+      return res.status(401).json({ message: "Invalid password" });
     }
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
@@ -83,8 +77,8 @@ export const signIn = async (req, res, next) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 3600000,
       path: "/",
     });
@@ -92,7 +86,7 @@ export const signIn = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "User signed in successfully",
-      data: {user},
+      data: { user },
     });
   } catch (error) {
     next(error);
@@ -100,15 +94,14 @@ export const signIn = async (req, res, next) => {
 };
 // ===============================
 
-
 // =====logout=====
 export const signOut = async (req, res, next) => {
   try {
-    res.clearCookie('token', {
+    res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
+      secure: true,
+      sameSite: "none",
+      path: "/",
     });
 
     res.status(200).json({
@@ -121,11 +114,9 @@ export const signOut = async (req, res, next) => {
 };
 // ===============================
 
-
 // ======refresh=====
 export const refresh = async (req, res, next) => {
   try {
- 
     const token = req.cookies.token;
 
     if (!token) {
@@ -147,6 +138,6 @@ export const refresh = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
 // ===============================
